@@ -35,10 +35,20 @@ def run_flow(message: str,
     return response.json()
 
 def main():
-   # Streamlit UI
-    st.title("LLG-AI Chatbot")
+
+    container = st.container()
+    # Streamlit UI
+    container.title(":balloon: LLG-AI")
+    container.text("Accelerate and automate Due Diligence process!")
     
-    uploaded_file = st.file_uploader("Upload a pdf to start:", type=["pdf"])
+    with st.sidebar:
+        container2 = st.container
+        uploaded_file = st.file_uploader("Upload a pdf to start:", type=["pdf"])
+        st.text("OR")
+        st.text("Put in company names to start:")
+        
+        st.text_input("Acquirer", "")
+        st.text_input("Company acquired", "")
 
     if uploaded_file is not None:
         
