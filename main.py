@@ -38,7 +38,7 @@ def main():
    # Streamlit UI
     st.title("LLG-AI Chatbot")
     
-    uploaded_file = st.file_uploader("Upload PDF File", type=["pdf", "docx"])
+    uploaded_file = st.file_uploader("Upload a pdf to start:", type=["pdf"])
 
     if uploaded_file is not None:
         
@@ -77,25 +77,29 @@ def main():
 
     # Accept user input
     if prompt := st.chat_input("What is up?"):
+
+        # Display user message in chat message container
+        with st.chat_message("user"):               
+            st.markdown(prompt)
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
-        # Display user message in chat message container
-        with st.chat_message("user"):
-            st.markdown(prompt)
 
         # Display assistant response in chat message container
         with st.chat_message("assistant"):
+            
             res = run_flow(
                 message=prompt,
                 endpoint=FLOW_ID,
                 application_token=APPLICATION_TOKEN
-                )
-            # print("res: ", res)
-            response = st.write(res["outputs"][0]["outputs"][0]["results"]["message"]["data"]["text"])
+            )
+
+            response = res["outputs"][0]["outputs"][0]["results"]["message"]["data"]["text"]
+            # Add response to chat history
+            st.markdown(response)
 
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
-
+       
 
 if __name__ == "__main__":
     main()
