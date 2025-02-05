@@ -1,12 +1,38 @@
 import streamlit as st
 import requests
 import pdfplumber
-from model_langflow import run_flow
+# from deployment.Streamlit_UI.revoke_langflow import run_flow
 import json
+from typing import Optional
 
+# This is the base URL for the Langflow API
+BASE_API_URL = "https://api.langflow.astra.datastax.com"
+LANGFLOW_ID = "cb683101-5ceb-4e35-9978-d402fc72e89d"
 FLOW_ID = "a4e1a2fb-3e8a-4fa8-a99c-ec7bb47e94c1"
 APPLICATION_TOKEN = "AstraCS:NoHkztKImvlyspGlzlHuvRzn:f6cb16f4f422734ac45c0b7c90df3dae7cfb7e5c428c9efb1fad9d5037676eed"
 ENDPOINT = "" # You can set a specific endpoint name in the flow settings
+
+def run_flow(message: str,
+  endpoint: str,
+  output_type: str = "chat",
+  input_type: str = "chat",
+  tweaks: Optional[dict] = None,
+  application_token: Optional[str] = None) -> dict:
+  
+    api_url = f"{BASE_API_URL}/lf/{LANGFLOW_ID}/api/v1/run/{endpoint}"
+
+    payload = {
+        "input_value": message,
+        "output_type": output_type,
+        "input_type": input_type,
+    }
+    headers = None
+    if tweaks:
+        payload["tweaks"] = tweaks
+    if application_token:
+        headers = {"Authorization": "Bearer " + application_token, "Content-Type": "application/json"}
+    response = requests.post(api_url, json=payload, headers=headers)
+    return response.json()
 
 def main():
    # Streamlit UI
