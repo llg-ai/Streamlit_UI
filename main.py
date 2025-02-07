@@ -36,11 +36,6 @@ def run_flow(message: str,
 
 def main():
 
-    # container = st.container()
-    # Streamlit UI
-    st.title(":balloon: LLG-AI")
-    st.text("Accelerate and automate Due Diligence process!")
-    
     hide_streamlit_style = """
             <style>
             #MainMenu {visibility: hidden;}
@@ -48,6 +43,10 @@ def main():
             </style>
             """
     st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+    
+    # Streamlit UI
+    st.title(":balloon: LLG-AI")
+    st.text("Accelerate and automate Due Diligence process!")
 
     with st.sidebar:
         container2 = st.container
