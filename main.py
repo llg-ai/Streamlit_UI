@@ -36,11 +36,19 @@ def run_flow(message: str,
 
 def main():
 
-    container = st.container()
+    # container = st.container()
     # Streamlit UI
-    container.title(":balloon: LLG-AI")
-    container.text("Accelerate and automate Due Diligence process!")
+    st.title(":balloon: LLG-AI")
+    st.text("Accelerate and automate Due Diligence process!")
     
+    hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            </style>
+            """
+    st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+
     with st.sidebar:
         container2 = st.container
         uploaded_file = st.file_uploader("Upload a pdf to start:", type=["pdf"])
