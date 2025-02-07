@@ -41,13 +41,14 @@ def main():
             #MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
             header {visibility: hidden;}
+            div.embeddedAppMetaInfoBar_container__DxxL1 {visibility: hidden;}
             </style>
             """
     st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
     
     # Streamlit UI
-    st.title(":balloon: LLG-AI")
-    st.text("Accelerate and automate Due Diligence process!")
+    st.title(":balloon: LLG AI")
+    st.text("AI-powered information retrieval in finance!")
 
     with st.sidebar:
         container2 = st.container
