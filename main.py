@@ -36,14 +36,14 @@ def run_flow(message: str,
 
 def main():
 
-    # hide_streamlit_style = """
-    #         <style>
-    #         #MainMenu {visibility: hidden;}
-    #         header {visibility: hidden;}
-    #         div.embeddedAppMetaInfoBar_container__DxxL1 {visibility: hidden;}
-    #         </style>
-    #         """
-    # st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+    hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            header {visibility: hidden;}
+            div.embeddedAppMetaInfoBar_container__DxxL1 {visibility: hidden;}
+            </style>
+            """
+    st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
     
     # Streamlit UI
     st.title(":balloon: LLG AI")
