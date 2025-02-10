@@ -1,25 +1,57 @@
 import streamlit as st
-import requests
 import pdfplumber
-# from deployment.Streamlit_UI.revoke_langflow import run_flow
+import argparse
 import json
+from argparse import RawTextHelpFormatter
+import requests
 from typing import Optional
+import warnings
+try:
+    from langflow.load import upload_file
+except ImportError:
+    warnings.warn("Langflow provides a function to help you upload files to the flow. Please install langflow to use it.")
+    upload_file = None
 
-# This is the base URL for the Langflow API
-BASE_API_URL = "https://api.langflow.astra.datastax.com"
-LANGFLOW_ID = "cb683101-5ceb-4e35-9978-d402fc72e89d"
-FLOW_ID = "a4e1a2fb-3e8a-4fa8-a99c-ec7bb47e94c1"
-APPLICATION_TOKEN = st.secrets["langflow_api_token"]
+BASE_API_URL = "https://easonchen19-llg-ai-workflow.hf.space"
+FLOW_ID = "8479a53c-465f-4912-a6b0-81c6936900a4"
 ENDPOINT = "" # You can set a specific endpoint name in the flow settings
+
+# You can tweak the flow by adding a tweaks dictionary
+# e.g {"OpenAI-XXXXX": {"model_name": "gpt-4"}}
+TWEAKS = {
+  "ChatInput-GPlMM": {},
+  "ChatOutput-7J4wz": {},
+  "ParseData-aEElI": {},
+  "Prompt-8bY1h": {
+      "template": "After users input a file or some data, you should help users summarize it in high-level, and also return the relative link from sec.gov website\nThe high-level information includes key takeaways, like: termination fee, deadline, important date nd other important numbers that users should know.\n\nAfter that, users typically will ask you some questions in the document below, and can you also answer their questions in simple 1 sentence or 2. \nAlso, return the context where you find the information and list them below, like a few sentences length?\n\n\n---\n\n{Document}\n\n---\n\n\nQuestion:\n\nwhen you answer question, can you also link the relative announcement you found in sec.gov website? i meant the merger or M&A announcement link in sec government website.  "
+  },
+  "OpenAIModel-b5Qml": {
+    "api_key": "openai_api_key"
+  },
+  "APIRequest-7Z7Sf": {
+    "body": [],
+    "headers": [],
+    "urls": [
+      "https://mvp-fastapi.onrender.com/"
+    ]
+  }
+}
 
 def run_flow(message: str,
   endpoint: str,
   output_type: str = "chat",
   input_type: str = "chat",
   tweaks: Optional[dict] = None,
-  application_token: Optional[str] = None) -> dict:
-  
-    api_url = f"{BASE_API_URL}/lf/{LANGFLOW_ID}/api/v1/run/{endpoint}"
+  api_key: Optional[str] = None) -> dict:
+    """
+    Run a flow with a given message and optional tweaks.
+
+    :param message: The message to send to the flow
+    :param endpoint: The ID or the endpoint name of the flow
+    :param tweaks: Optional tweaks to customize the flow
+    :return: The JSON response from the flow
+    """
+    api_url = f"{BASE_API_URL}/api/v1/run/{endpoint}"
 
     payload = {
         "input_value": message,
@@ -29,12 +61,24 @@ def run_flow(message: str,
     headers = None
     if tweaks:
         payload["tweaks"] = tweaks
-    if application_token:
-        headers = {"Authorization": "Bearer " + application_token, "Content-Type": "application/json"}
+    if api_key:
+        headers = {"x-api-key": api_key}
     response = requests.post(api_url, json=payload, headers=headers)
     return response.json()
 
 def main():
+    parser = argparse.ArgumentParser(description="""Run a flow with a given message and optional tweaks.
+Run it like: python <your file>.py "your message here" --endpoint "your_endpoint" --tweaks '{"key": "value"}'""",
+        formatter_class=RawTextHelpFormatter)
+    # parser.add_argument("message", type=str, help="The message to send to the flow")
+    parser.add_argument("--endpoint", type=str, default=ENDPOINT or FLOW_ID, help="The ID or the endpoint name of the flow")
+    parser.add_argument("--tweaks", type=str, help="JSON string representing the tweaks to customize the flow", default=json.dumps(TWEAKS))
+
+    args = parser.parse_args()
+    try:
+      tweaks = json.loads(args.tweaks)
+    except json.JSONDecodeError:
+      raise ValueError("Invalid tweaks JSON string")
 
     hide_streamlit_style = """
             <style>
@@ -107,8 +151,11 @@ def main():
             
             res = run_flow(
                 message=prompt,
-                endpoint=FLOW_ID,
-                application_token=APPLICATION_TOKEN
+                endpoint=args.endpoint,
+                output_type="chat",
+                input_type="chat",
+                tweaks=tweaks,
+                api_key=None
             )
 
             response = res["outputs"][0]["outputs"][0]["results"]["message"]["data"]["text"]
@@ -118,6 +165,17 @@ def main():
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
        
+
+    # response = run_flow(
+    #     message=args.message,
+    #     endpoint=args.endpoint,
+    #     output_type="chat",
+    #     input_type="chat",
+    #     tweaks=tweaks,
+    #     api_key=None
+    # )
+    # res = response["outputs"][0]["outputs"][0]["results"]["message"]["data"]["text"]
+    # print(json.dumps(res, indent=2))
 
 if __name__ == "__main__":
     main()
