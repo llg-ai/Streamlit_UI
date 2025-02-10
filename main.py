@@ -13,22 +13,22 @@ except ImportError:
     upload_file = None
 
 BASE_API_URL = "https://easonchen19-llg-ai-workflow.hf.space"
-FLOW_ID = "8479a53c-465f-4912-a6b0-81c6936900a4"
+FLOW_ID = "5977b648-00b9-42f6-9e5e-1ba00273b12a"
 ENDPOINT = "" # You can set a specific endpoint name in the flow settings
 
 # You can tweak the flow by adding a tweaks dictionary
 # e.g {"OpenAI-XXXXX": {"model_name": "gpt-4"}}
 TWEAKS = {
-  "ChatInput-GPlMM": {},
-  "ChatOutput-7J4wz": {},
-  "ParseData-aEElI": {},
-  "Prompt-8bY1h": {
+  "ChatInput-BQKQr": {},
+  "ChatOutput-wVqYD": {},
+  "ParseData-ekZ7j": {},
+  "Prompt-0VpLK": {
       "template": "After users input a file or some data, you should help users summarize it in high-level, and also return the relative link from sec.gov website\nThe high-level information includes key takeaways, like: termination fee, deadline, important date and other important numbers that users should know.\n\nAfter that, users typically will ask you some questions in the document below, and can you also answer their questions in simple 1 sentence or 2. \n\nBe careful there might be more than 2 or 3 termination fees, you should return each and all of them and summarize the corresponding scenarios. \n\n\n\n---\n\n{Document}\n\n---\n\n\nQuestion:\n\nAlso, return the context where you find the information and list them below, like a few sentences length?\n\nwhen you answer question, can you also link the relative announcement you found in sec.gov website? i meant the merger or M&A announcement link in sec government website as well as other relative links or news."
   }, 
-  "OpenAIModel-b5Qml": {
-    "api_key": "openai_api_key"
+  "OpenAIModel-W8r7q": {
+    "api_key": "openai_api_token"
   },
-  "APIRequest-7Z7Sf": {
+  "APIRequest-DlJeO": {
     "body": [],
     "headers": [],
     "urls": [
