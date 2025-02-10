@@ -23,8 +23,8 @@ TWEAKS = {
   "ChatOutput-7J4wz": {},
   "ParseData-aEElI": {},
   "Prompt-8bY1h": {
-      "template": "After users input a file or some data, you should help users summarize it in high-level, and also return the relative link from sec.gov website\nThe high-level information includes key takeaways, like: termination fee, deadline, important date nd other important numbers that users should know.\n\nAfter that, users typically will ask you some questions in the document below, and can you also answer their questions in simple 1 sentence or 2. \nAlso, return the context where you find the information and list them below, like a few sentences length?\n\n\n---\n\n{Document}\n\n---\n\n\nQuestion:\n\nwhen you answer question, can you also link the relative announcement you found in sec.gov website? i meant the merger or M&A announcement link in sec government website.  "
-  },
+      "template": "After users input a file or some data, you should help users summarize it in high-level, and also return the relative link from sec.gov website\nThe high-level information includes key takeaways, like: termination fee, deadline, important date and other important numbers that users should know.\n\nAfter that, users typically will ask you some questions in the document below, and can you also answer their questions in simple 1 sentence or 2. \n\nBe careful there might be more than 2 or 3 termination fees, you should return each of them and summarize the corresponding scenarios. \n\n\n\n---\n\n{Document}\n\n---\n\n\nQuestion:\n\nAlso, return the context where you find the information and list them below, like a few sentences length?\n\nwhen you answer question, can you also link the relative announcement you found in sec.gov website? i meant the merger or M&A announcement link in sec government website as well as other relative links or news."
+  }, 
   "OpenAIModel-b5Qml": {
     "api_key": "openai_api_key"
   },
