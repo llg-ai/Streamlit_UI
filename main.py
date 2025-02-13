@@ -13,23 +13,23 @@ except ImportError:
     upload_file = None
 
 BASE_API_URL = "https://easonchen19-llg-ai-workflow.hf.space"
-FLOW_ID = "bac12a2e-77bf-4c45-8182-db4298c20163"
+FLOW_ID = "b58b5000-8749-4da6-9886-103d146344a7"
 ENDPOINT = "" # You can set a specific endpoint name in the flow settings
 HF_API_KEY = st.secrets["hf_api_key"]
 
 # You can tweak the flow by adding a tweaks dictionary
 # e.g {"OpenAI-XXXXX": {"model_name": "gpt-4"}}
 TWEAKS = {
-  "ChatInput-n1ARR": {},
-  "ChatOutput-oUa8N": {},
-  "ParseData-OxzJI": {},
-  "Prompt-lSPGp": {
+  "ChatInput-Ghk1R": {},
+  "ChatOutput-pivGn": {},
+  "ParseData-opoiP": {},
+  "Prompt-FjATw": {
       "template": "After users input a file or some data, you should help users summarize it in high-level, and also return the relative link from sec.gov website\nThe high-level information includes key takeaways, like: termination fee, deadline, important date and other important numbers that users should know.\n\nAfter that, users typically will ask you some questions in the document below, and can you also answer their questions in simple 1 sentence or 2. \n\nBe careful there might be more than 2 or 3 termination fees, you should return each and all of them and summarize the corresponding scenarios. \n\n\n\n---\n\n{Document}\n\n---\n\n\nQuestion:\n\nAlso, return the context where you find the information and list them below, like a few sentences length?\n\nwhen you answer question, can you also link the relative announcement you found in sec.gov website? i meant the merger or M&A announcement link in sec government website as well as other relative links or news."
   }, 
-  "OpenAIModel-gXymQ": {
+  "OpenAIModel-6YhZr": {
     "api_key": "openai_api_key"
   },
-  "APIRequest-yT0Xi": {
+  "APIRequest-4ontm": {
     "body": [],
     "headers": [],
     "urls": [
