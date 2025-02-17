@@ -94,6 +94,15 @@ Run it like: python <your file>.py "your message here" --endpoint "your_endpoint
     st.title(":balloon: LLG AI")
     st.text("AI-powered information retrieval in finance!")
 
+    css="""
+    <style>
+        [data-testid="stSidebarContent"] {
+            background: #409444;
+        }
+    </style>
+    """
+    st.write(css, unsafe_allow_html=True)
+
     with st.sidebar:
         container2 = st.container
         uploaded_file = st.file_uploader("Upload a pdf to start:", type=["pdf"])
