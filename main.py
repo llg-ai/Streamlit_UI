@@ -17,6 +17,17 @@ FLOW_ID = "8aed03e3-7a2f-4497-a371-622746ef47e6"
 ENDPOINT = "" # You can set a specific endpoint name in the flow settings
 HF_API_KEY = st.secrets["hf_api_key"]
 
+
+with st.sidebar:
+        container2 = st.container
+        uploaded_file = st.file_uploader("Upload a pdf to start:", type=["pdf"])
+        st.text("OR")
+        st.text("Put in company names to start:")
+        
+        acquirer = st.text_input("Acquirer", "")
+        acquired = st.text_input("Company acquired", "")
+
+
 # You can tweak the flow by adding a tweaks dictionary
 # e.g {"OpenAI-XXXXX": {"model_name": "gpt-4"}}
 TWEAKS = {
@@ -35,6 +46,12 @@ TWEAKS = {
     "urls": [
       "https://mvp-fastapi.onrender.com/"
     ]
+  },
+  "Prompt-4q9Ol": {
+    "template": "After users input a file or some data, you should help users summarize it in high-level, and also return the relative link from sec.gov website\nThe high-level information includes key takeaways, like: termination fee, deadline, important date and other important numbers that users should know.\n\nAfter that, users typically will ask you some questions in the {search_results}{input_value} below, and can you also answer their questions in simple 1 sentence or 2. \n\nBe careful there might be more than 2 or 3 termination fees, you should return each and all of them and summarize the corresponding scenarios. \n\n\n\n---\n\n{search_results}{input_value}\n\n---\n\n\nQuestion:\n\nAlso, return the context where you find the information and list them below, like a few sentences length?\n\nwhen you answer question, can you also link the relative announcement you found in sec.gov website? i meant the merger or M&A announcement link in sec government website as well as other relative links or news. Also, remember - if there are some value in {input_value}, do some online search before returning to users. When there are data about different mergers in the {search_results}and {input_value}, you should return them separately, then ask users to let them decide which data to return"
+  },
+  "TextInput-umNnp": {
+    "input_value": acquirer + "'s acquisition of " + acquired
   }
 }
 
@@ -106,15 +123,6 @@ Run it like: python <your file>.py "your message here" --endpoint "your_endpoint
     """
     st.write(css, unsafe_allow_html=True)
 
-    with st.sidebar:
-        container2 = st.container
-        uploaded_file = st.file_uploader("Upload a pdf to start:", type=["pdf"])
-        st.text("OR")
-        st.text("Put in company names to start:")
-        
-        st.text_input("Acquirer", "")
-        st.text_input("Company acquired", "")
-
     if uploaded_file is not None:
         
         data = ""
@@ -178,17 +186,5 @@ Run it like: python <your file>.py "your message here" --endpoint "your_endpoint
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
        
-
-    # response = run_flow(
-    #     message=args.message,
-    #     endpoint=args.endpoint,
-    #     output_type="chat",
-    #     input_type="chat",
-    #     tweaks=tweaks,
-    #     api_key=None
-    # )
-    # res = response["outputs"][0]["outputs"][0]["results"]["message"]["data"]["text"]
-    # print(json.dumps(res, indent=2))
-
 if __name__ == "__main__":
     main()
