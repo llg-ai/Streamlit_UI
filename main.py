@@ -6,6 +6,8 @@ from argparse import RawTextHelpFormatter
 import requests
 from typing import Optional
 import warnings
+import streamlit_survey as ss
+
 try:
     from langflow.load import upload_file
 except ImportError:
@@ -17,6 +19,10 @@ FLOW_ID = "8aed03e3-7a2f-4497-a371-622746ef47e6"
 ENDPOINT = "" # You can set a specific endpoint name in the flow settings
 HF_API_KEY = st.secrets["hf_api_key"]
 
+st.set_page_config(
+    page_title="Hello",
+    page_icon="👋",
+)
 
 with st.sidebar:
         container2 = st.container
@@ -26,7 +32,6 @@ with st.sidebar:
         
         acquirer = st.text_input("Acquirer", "")
         acquired = st.text_input("Company acquired", "")
-
 
 # You can tweak the flow by adding a tweaks dictionary
 # e.g {"OpenAI-XXXXX": {"model_name": "gpt-4"}}
