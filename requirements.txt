@@ -20,3 +20,4 @@ pycparser==2.22
     # via cffi
 pypdfium2==4.30.1
     # via pdfplumber
+streamlit_survey
