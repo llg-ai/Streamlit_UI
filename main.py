@@ -140,7 +140,8 @@ Run it like: python <your file>.py "your message here" --endpoint "your_endpoint
 
         # POST request
         payload = {
-            "item": data
+            "item": data,
+            "count": 189
         }
        
         headers = {
