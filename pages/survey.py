@@ -5,17 +5,17 @@ import pygsheets
 import pandas as pd
 
 #authorization
-gc = pygsheets.authorize(service_file='./llg-survey.json')
+# gc = pygsheets.authorize(service_file='./llg-survey.json')
 
 # Create empty dataframe
-df = pd.DataFrame()
+# df = pd.DataFrame()
 
 # Create a column
-df['name'] = ['John', 'Steve', 'Sarah']
+# df['name'] = ['John', 'Steve', 'Sarah']
 #open the google spreadsheet (where 'LLG_Survey' is the name of my sheet)
-sh = gc.open('LLG_Survey')
+# sh = gc.open('LLG_Survey')
 #select the first sheet 
-wks = sh[0]
+# wks = sh[0]
 
 survey = ss.StreamlitSurvey()
 
@@ -41,14 +41,14 @@ if clickSubmit == True:
     st.markdown('<h3>Thank you for your feedback!</h3>', unsafe_allow_html=True)
     data = survey.to_json()
     
-    df = pd.read_json(f'[{data}]')
+    # df = pd.read_json(f'[{data}]')
     # st.write(df)
     #update the first sheet with df
-    current_df = wks.get_as_df()
-    num_rows = current_df.shape[0]
-    num_cols = current_df.shape[1]
+    # current_df = wks.get_as_df()
+    # num_rows = current_df.shape[0]
+    # num_cols = current_df.shape[1]
     
-    wks.set_dataframe(df,(num_rows+2, 1))
+    # wks.set_dataframe(df,(num_rows+2, 1))
 
 css="""
     <style>
