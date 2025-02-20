@@ -123,8 +123,16 @@ Run it like: python <your file>.py "your message here" --endpoint "your_endpoint
     """
     st.write(css, unsafe_allow_html=True)
 
+    # update the file count
+    url_count = "https://mvp-fastapi.onrender.com/count"
+    count = requests.request("GET", url_count).json()["count"][0]
+    # count += 1
+    with st.sidebar:
+        st.metric(label="Questions answered based on files:", value=count, border=True)
+
     if uploaded_file is not None:
-        
+        # update file count
+        count += 1
         data = ""
         with pdfplumber.open(uploaded_file) as pdf:
             for p in pdf.pages:
@@ -141,7 +149,7 @@ Run it like: python <your file>.py "your message here" --endpoint "your_endpoint
         # POST request
         payload = {
             "item": data,
-            "count": 189
+            "count": count
         }
        
         headers = {
@@ -149,7 +157,7 @@ Run it like: python <your file>.py "your message here" --endpoint "your_endpoint
             'Accept': 'application/json'
         }
         response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
- 
+    
     # Initialize chat history
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -161,7 +169,7 @@ Run it like: python <your file>.py "your message here" --endpoint "your_endpoint
 
     # Accept user input
     if prompt := st.chat_input("What is up?"):
-
+        
         # Display user message in chat message container
         with st.chat_message("user"):               
             st.markdown(prompt)
