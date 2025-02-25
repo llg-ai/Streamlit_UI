@@ -119,7 +119,7 @@ Run it like: python <your file>.py "your message here" --endpoint "your_endpoint
     css="""
     <style>
         [data-testid="stSidebarContent"] {
-            background: #409444;
+            background-image: linear-gradient(to right, #0eff00, #0a5d00);
         }
         [data-testid="stMainBlockContainer"] {
             # background: #ffffff; 
