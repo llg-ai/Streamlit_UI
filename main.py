@@ -56,7 +56,7 @@ st.markdown(
 #     "<h1 style='text-align: center;'>Happy Holiday Season</h1>", unsafe_allow_html=True
 # )
 
-st.balloons()
+# st.balloons()
 # st.snow()
 
 
