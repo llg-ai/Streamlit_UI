@@ -6,10 +6,8 @@ import json
 from argparse import RawTextHelpFormatter
 import requests
 from typing import Optional
-from base64 import b64encode
 import warnings
 import streamlit_survey as ss
-from streamlit_player import st_player
 
 try:
     from langflow.load import upload_file
