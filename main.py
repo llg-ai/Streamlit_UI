@@ -1,3 +1,4 @@
+from pathlib import Path
 import streamlit as st
 import pdfplumber
 import argparse
@@ -5,8 +6,10 @@ import json
 from argparse import RawTextHelpFormatter
 import requests
 from typing import Optional
+from base64 import b64encode
 import warnings
 import streamlit_survey as ss
+from streamlit_player import st_player
 
 try:
     from langflow.load import upload_file
@@ -105,28 +108,35 @@ Run it like: python <your file>.py "your message here" --endpoint "your_endpoint
 
     hide_streamlit_style = """
             <style>
-            #MainMenu {visibility: hidden;}
+            # MainMenu {visibility: hidden;}
             header {visibility: hidden;}
             div.embeddedAppMetaInfoBar_container__DxxL1 {visibility: hidden;}
             </style>
-            """
+    """
     st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
     
     # Streamlit UI
-    st.title(":balloon: LLG AI")
-    st.text("AI-powered information retrieval in finance!")
+    st.title(f":balloon: :green[LLG AI]")
+    st.markdown(f":green[AI-powered information retrieval in finance!]")
 
     css="""
     <style>
         [data-testid="stSidebarContent"] {
             background-image: linear-gradient(to right, #0eff00, #0a5d00);
         }
-        [data-testid="stMainBlockContainer"] {
-            # background: #ffffff; 
+        [data-testid="stFileUploaderDropzone"] {
+            # background: #000000; 
+            height: 90%;
+            width: 85%;
+            # background-image: linear-gradient(to left, #0eff00, #0a5d00);
+        }
+        [data-testid="stFileUploaderDropzoneInstructions"] {
+            # background: #000000; 
+            # background-image: linear-gradient(to left, #0eff00, #0a5d00);
         }
     </style>
     """
-    st.write(css, unsafe_allow_html=True)
+    st.markdown(css, unsafe_allow_html=True)
 
     # update the file count
     url_count = "https://mvp-fastapi.onrender.com/count"
