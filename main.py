@@ -8,6 +8,7 @@ import requests
 from typing import Optional
 import warnings
 import streamlit_survey as ss
+import random
 
 try:
     from langflow.load import upload_file
@@ -21,9 +22,43 @@ ENDPOINT = "" # You can set a specific endpoint name in the flow settings
 HF_API_KEY = st.secrets["hf_api_key"]
 
 st.set_page_config(
-    page_title="Hello",
-    page_icon="👋",
+    page_title="LLG",
+    page_icon="💵",
 )
+
+# Use local CSS
+def local_css(file_name):
+    with open(file_name) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+
+local_css("style/style.css")
+
+# Load Animation
+# animation_symbol = "❄"
+animation_symbol = "💵"
+animation_symbol2 = "$"
+
+st.markdown(
+    f"""
+    <div class="snowflake">{animation_symbol}</div>
+    <div class="snowflake">{animation_symbol}</div>
+    <div class="snowflake">{animation_symbol}</div>
+    <div class="snowflake">{animation_symbol2}</div>
+    <div class="snowflake">{animation_symbol2}</div>
+    <div class="snowflake">{animation_symbol2}</div>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+# st.markdown(
+#     "<h1 style='text-align: center;'>Happy Holiday Season</h1>", unsafe_allow_html=True
+# )
+
+st.balloons()
+# st.snow()
+
 
 with st.sidebar:
         container2 = st.container
