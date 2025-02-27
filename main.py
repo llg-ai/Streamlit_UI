@@ -36,8 +36,10 @@ local_css("style/style.css")
 
 # Load Animation
 # animation_symbol = "❄"
-animation_symbol = "💵"
-animation_symbol2 = "$"
+animation_symbol = "🎉" 
+animation_symbol2 = "💵"
+animation_symbol3 = "$"
+
 
 st.markdown(
     f"""
@@ -47,18 +49,12 @@ st.markdown(
     <div class="snowflake">{animation_symbol2}</div>
     <div class="snowflake">{animation_symbol2}</div>
     <div class="snowflake">{animation_symbol2}</div>
+    <div class="snowflake">{animation_symbol3}</div>
+    <div class="snowflake">{animation_symbol3}</div>
+    <div class="snowflake">{animation_symbol3}</div>
     """,
     unsafe_allow_html=True,
 )
-
-
-# st.markdown(
-#     "<h1 style='text-align: center;'>Happy Holiday Season</h1>", unsafe_allow_html=True
-# )
-
-# st.balloons()
-# st.snow()
-
 
 with st.sidebar:
         container2 = st.container
@@ -150,7 +146,7 @@ Run it like: python <your file>.py "your message here" --endpoint "your_endpoint
     
     # Streamlit UI
     st.title(f":balloon: :green[LLG AI]")
-    st.markdown(f":green[AI-powered information retrieval in finance!]")
+    st.markdown("""<span style="color: green;">AI-powered information retrieval in finance!</span>""", unsafe_allow_html=True)
 
     css="""
     <style>
