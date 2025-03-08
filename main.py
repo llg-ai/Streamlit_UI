@@ -38,8 +38,8 @@ embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
 vector_store = InMemoryVectorStore(embeddings)
 
 
-# if not os.getenv("DEEPSEEK_API_KEY"):
-#     os.environ["DEEPSEEK_API_KEY"] = "sk-79d2f50d21a34b8fbe45b17e2d205d8e"
+if not os.getenv("DEEPSEEK_API_KEY"):
+    os.environ["DEEPSEEK_API_KEY"] = st.secrets["deepseek_api_key"]
 
 from langchain_deepseek import ChatDeepSeek
 
