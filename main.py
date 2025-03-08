@@ -15,7 +15,7 @@ from langchain.vectorstores import Chroma
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain_deepseek import ChatDeepSeek
-
+import pypdf
 from langchain_community.document_loaders.parsers import LLMImageBlobParser
 from langchain_openai import ChatOpenAI
 
