@@ -14,6 +14,12 @@ from langchain_core.vectorstores import InMemoryVectorStore
 from langchain.vectorstores import Chroma
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
+from langchain_deepseek import ChatDeepSeek
+
+from langchain_community.document_loaders.parsers import LLMImageBlobParser
+from langchain_openai import ChatOpenAI
+
+from langchain_experimental.text_splitter import SemanticChunker
 
 st.set_page_config(
     page_title="LLG",
@@ -31,8 +37,6 @@ vector_store = InMemoryVectorStore(embeddings)
 
 if not os.getenv("DEEPSEEK_API_KEY"):
     os.environ["DEEPSEEK_API_KEY"] = st.secrets["deepseek_api_key"]
-
-from langchain_deepseek import ChatDeepSeek
 
 llm = ChatDeepSeek(
     model="deepseek-chat",
@@ -141,8 +145,6 @@ def main():
             with open(uploaded_file.name, mode='wb') as w:
                 w.write(uploaded_file.getvalue())
                 
-                from langchain_community.document_loaders.parsers import LLMImageBlobParser
-                from langchain_openai import ChatOpenAI
                 loader = PyPDFLoader(
                     uploaded_file.name,
                     mode="page",
@@ -150,9 +152,6 @@ def main():
                     images_parser=LLMImageBlobParser(model=ChatOpenAI(model="gpt-4o", max_tokens=1024)),
                 )
                 pages = loader.load()
-
-                from langchain_experimental.text_splitter import SemanticChunker
-                from langchain_openai.embeddings import OpenAIEmbeddings
 
                 text_splitter = SemanticChunker(
                     OpenAIEmbeddings(), breakpoint_threshold_type="percentile"
