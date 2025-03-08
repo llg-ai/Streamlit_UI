@@ -11,13 +11,6 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.chat_models import init_chat_model
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.vectorstores import InMemoryVectorStore
-import ollama
-import re
-import gradio as gr
-from concurrent.futures import ThreadPoolExecutor
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import PyMuPDFLoader
-from langchain_community.embeddings import OllamaEmbeddings
 from chromadb.config import Settings
 from chromadb import Client
 from langchain.vectorstores import Chroma
@@ -252,8 +245,6 @@ def main():
             # for result in results:
             #     st.markdown(result)
             #     st.markdown("---------------------------------------------------------")
-
-            from langchain_core.prompts import ChatPromptTemplate
 
             prompt_cus = ChatPromptTemplate(
                 [
