@@ -1,36 +1,114 @@
-from pathlib import Path
 import streamlit as st
-import pdfplumber
-import argparse
 import json
-from argparse import RawTextHelpFormatter
 import requests
-from typing import Optional
-import warnings
 import streamlit_survey as ss
-import random
-
-try:
-    from langflow.load import upload_file
-except ImportError:
-    warnings.warn("Langflow provides a function to help you upload files to the flow. Please install langflow to use it.")
-    upload_file = None
-
-BASE_API_URL = "https://easonchen19-llg-ai-workflow.hf.space"
-FLOW_ID = "ce5141a7-b61a-4d72-b997-c18057307a5c"
-ENDPOINT = "" # You can set a specific endpoint name in the flow settings
-HF_API_KEY = st.secrets["hf_api_key"]
+from langchain_core.prompts import ChatPromptTemplate
+from langchain.chains import create_retrieval_chain, create_history_aware_retriever
+from langchain.chains.combine_documents import create_stuff_documents_chain
+import os
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain.chat_models import init_chat_model
+from langchain_openai import OpenAIEmbeddings
+from langchain_core.vectorstores import InMemoryVectorStore
+from langchain.vectorstores import Chroma
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationalRetrievalChain
+from langchain_deepseek import ChatDeepSeek
+import pypdf
+from langchain_community.document_loaders.parsers import LLMImageBlobParser
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import PromptTemplate
+from langchain_experimental.text_splitter import SemanticChunker
 
 st.set_page_config(
     page_title="LLG",
     page_icon="💵",
 )
 
+if not os.environ.get("OPENAI_API_KEY"):
+  os.environ["OPENAI_API_KEY"] = st.secrets["OPEN_API_KEY"]
+
+# setup chat model, embedding and vector_store
+llm = init_chat_model("gpt-4o", model_provider="openai", temperature=0)
+embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
+vector_store = InMemoryVectorStore(embeddings)
+
+# llm = ChatDeepSeek(
+#     model="deepseek-chat",
+#     temperature=0,
+#     max_tokens=None,
+#     timeout=None,
+#     max_retries=2,
+#     api_key=st.secrets["deepseek_api_key"]
+#     # other params...
+# )
+
+# prompt_cus = ChatPromptTemplate(
+#                 [
+#                     (
+#                         "system",
+#                             """
+
+#                             When users ask for high level summary or key takeaways, you shou search entire file and collect important memos for users
+#                             Including:
+#                             - Acquisition Details
+#                             - Financing Structure
+#                             - Termination Fee
+#                             - Voting Agreement
+#                             - Risks & Forward-Looking Statements
+#                             - Press Release & Investor Meetings
+#                             - Due Date/Announcement Date
+
+#                             Be sure also return the SEC filing link to users. 
+
+#                             When users ask a specific question, like termination fee, you should help users answer questions 
+#                             based on the context: {context}. If you do not know, just "say I do not know!" Do not make up answers! 
+#                             You should also return the underlying context where you found the answer for the question.
+
+#                             """
+#                     ),
+#                     ("human", "{input}"),
+#                 ]
+# )
+
+# chain = prompt_cus | llm
+
+template2 = """
+    Answer users questions {question}!
+
+    Before answer the question, you should think about the question
+    is about high level summary or key takeaways
+    OR
+    is about a specific question.
+
+    If you believe that this is a high level summary or takeaways question, you should search entire file and collect important memos for users
+    Including:
+    - Acquisition Details
+    - Financing Structure
+    - Termination Clauses
+    - Voting Agreement
+    - Risks & Forward-Looking Statements
+    - Press Release & Investor Meetings
+    - Due Date/Announcement Date
+
+    Be sure also return the SEC filing link to users. 
+
+    If you think this is a specific question,like termination fee, due date valuation and other question you think 
+    should fall into this category, you should help users answer questions 
+    based on the context: {context}. You should also return the underlying context where you found the answer for the question.
+    Also, you should highlight the "keywords".
+
+    If you do not know, just "say I do not know!" Do not make up the answers! 
+    
+"""
+
+custom_rag_prompt = PromptTemplate.from_template(template2)
+
 # Use local CSS
 def local_css(file_name):
     with open(file_name) as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-
 
 local_css("style/style.css")
 
@@ -39,7 +117,6 @@ local_css("style/style.css")
 animation_symbol = "🎉" 
 animation_symbol2 = "💵"
 animation_symbol3 = "$"
-
 
 st.markdown(
     f"""
@@ -65,76 +142,7 @@ with st.sidebar:
         acquirer = st.text_input("Acquirer", "")
         acquired = st.text_input("Company acquired", "")
 
-# You can tweak the flow by adding a tweaks dictionary
-# e.g {"OpenAI-XXXXX": {"model_name": "gpt-4"}}
-TWEAKS = {
-  "ChatInput-U8YtE": {},
-  "ChatOutput-OIwjh": {},
-  "ParseData-KhOtb": {},
-  "Prompt-atqt2": {
-      "template": "After users input a file or some data, you should help users summarize it in high-level, and also return the relative link from sec.gov website\nThe high-level information includes key takeaways, like: termination fee, deadline, important date and other important numbers that users should know.\n\nAfter that, users typically will ask you some questions in the document below, and can you also answer their questions in simple 1 sentence or 2. \n\nBe careful there might be more than 2 or 3 termination fees, you should return each and all of them and summarize the corresponding scenarios. \n\n\n\n---\n\n{Document}\n\n---\n\n\nQuestion:\n\nAlso, return the context where you find the information and list them below, like a few sentences length?\n\nwhen you answer question, can you also link the relative announcement you found in sec.gov website? i meant the merger or M&A announcement link in sec government website as well as other relative links or news."
-  }, 
-  "OpenAIModel-4ybSU": {
-    "api_key": "openai_api_key"
-  },
-  "APIRequest-uQLqa": {
-    "body": [],
-    "headers": [],
-    "urls": [
-      "https://mvp-fastapi.onrender.com/"
-    ]
-  },
-  "Prompt-mzxbB": {
-    "template": "After users input a file or some data, you should help users summarize it in high-level, and also return the relative link from sec.gov website\nThe high-level information includes key takeaways, like: termination fee, deadline, important date and other important numbers that users should know.\n\nAfter that, users typically will ask you some questions in the {search_results}{input_value} below, and can you also answer their questions in simple 1 sentence or 2. \n\nBe careful there might be more than 2 or 3 termination fees, you should return each and all of them and summarize the corresponding scenarios. \n\n\n\n---\n\n{search_results}{input_value}\n\n---\n\n\nQuestion:\n\nAlso, return the context where you find the information and list them below, like a few sentences length?\n\nwhen you answer question, can you also link the relative announcement you found in sec.gov website? i meant the merger or M&A announcement link in sec government website as well as other relative links or news. Also, remember - if there are some value in {input_value}, do some online search before returning to users. When there are data about different mergers in the {search_results}and {input_value}, you should return them separately, then ask users to let them decide which data to return"
-  },
-  "TextInput-ySsT3": {
-    "input_value": acquirer + "'s acquisition of " + acquired
-  }
-}
-
-def run_flow(message: str,
-  endpoint: str,
-  output_type: str = "chat",
-  input_type: str = "chat",
-  tweaks: Optional[dict] = None,
-  api_key: Optional[str] = None) -> dict:
-    """
-    Run a flow with a given message and optional tweaks.
-
-    :param message: The message to send to the flow
-    :param endpoint: The ID or the endpoint name of the flow
-    :param tweaks: Optional tweaks to customize the flow
-    :return: The JSON response from the flow
-    """
-    api_url = f"{BASE_API_URL}/api/v1/run/{endpoint}"
-
-    payload = {
-        "input_value": message,
-        "output_type": output_type,
-        "input_type": input_type,
-    }
-    headers = None
-    if tweaks:
-        payload["tweaks"] = tweaks
-    if api_key:
-        headers = {"Authorization": "Bearer " + api_key, "Content-Type": "application/json"}
-    response = requests.post(api_url, json=payload, headers=headers)
-    return response.json()
-
 def main():
-    parser = argparse.ArgumentParser(description="""Run a flow with a given message and optional tweaks.
-Run it like: python <your file>.py "your message here" --endpoint "your_endpoint" --tweaks '{"key": "value"}'""",
-        formatter_class=RawTextHelpFormatter)
-    # parser.add_argument("message", type=str, help="The message to send to the flow")
-    parser.add_argument("--endpoint", type=str, default=ENDPOINT or FLOW_ID, help="The ID or the endpoint name of the flow")
-    parser.add_argument("--tweaks", type=str, help="JSON string representing the tweaks to customize the flow", default=json.dumps(TWEAKS))
-
-    args = parser.parse_args()
-    try:
-      tweaks = json.loads(args.tweaks)
-    except json.JSONDecodeError:
-      raise ValueError("Invalid tweaks JSON string")
-
     hide_streamlit_style = """
             <style>
             # MainMenu {visibility: hidden;}
@@ -177,22 +185,10 @@ Run it like: python <your file>.py "your message here" --endpoint "your_endpoint
     if uploaded_file is not None:
         # update file count
         count += 1
-        data = ""
-        with pdfplumber.open(uploaded_file) as pdf:
-            for p in pdf.pages:
-                # for image in p.images:
-                #     print(image["page_number"]) # until here, everything works!
-                #     with open(f"image_{image['page_number']}.jpg", "wb") as f:
-                #         print(type(image["stream"]))
-                
-                data += p.extract_text()
-
-        # this is the url for fastapi
         url = "https://mvp-fastapi.onrender.com/"
-
         # POST request
         payload = {
-            "item": data,
+            "item": "",
             "count": count
         }
        
@@ -202,6 +198,33 @@ Run it like: python <your file>.py "your message here" --endpoint "your_endpoint
         }
         response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
     
+        with st.spinner("Think...", show_time=True):
+
+            with open(uploaded_file.name, mode='wb') as w:
+                w.write(uploaded_file.getvalue())
+                
+                loader = PyPDFLoader(
+                    uploaded_file.name,
+                    mode="page",
+                    images_inner_format="markdown-img",
+                    images_parser=LLMImageBlobParser(model=ChatOpenAI(model="gpt-4o", max_tokens=1024)),
+                )
+                pages = loader.load()
+
+                # text_splitter = SemanticChunker(
+                #     OpenAIEmbeddings(), breakpoint_threshold_type="percentile"
+                # )
+                text_splitter = RecursiveCharacterTextSplitter(
+                    chunk_size=3000,  # chunk size (characters)
+                    chunk_overlap=750,  # chunk overlap (characters)
+                    add_start_index=True,  # track index in original document
+                )
+
+                all_splits = text_splitter.split_documents(pages)
+ 
+                # Load all splits into VDB
+                vector_store.add_documents(documents=all_splits)
+
     # Initialize chat history
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -215,29 +238,37 @@ Run it like: python <your file>.py "your message here" --endpoint "your_endpoint
     if prompt := st.chat_input("What is up?"):
         
         # Display user message in chat message container
-        with st.chat_message("user"):               
-            st.markdown(prompt)
-        # Add user message to chat history
-        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"): 
+            # with st.spinner(text = "thinking..."):              
+                st.markdown(prompt)
+                # Add user message to chat history
+                st.session_state.messages.append({"role": "user", "content": prompt})
 
         # Display assistant response in chat message container
         with st.chat_message("assistant"):
+
+            embedding = embeddings.embed_query(prompt)
+
+            results = vector_store.similarity_search_by_vector(embedding, k=3)
+
+            # pass search result and question into the model chain
+            # res = chain.invoke(
+            #     {
+            #         "context": results,
+            #         "input": prompt,
+            #     }
+            # )
+
+            # response = res.content
+            # st.markdown(response)
             
-            res = run_flow(
-                message=prompt,
-                endpoint=args.endpoint,
-                output_type="chat",
-                input_type="chat",
-                tweaks=tweaks,
-                api_key=HF_API_KEY
-            )
+            # build prompt based on the search result
+            messages = custom_rag_prompt.invoke({"question": prompt, "context": results})
+            # load the prompt into LLM
+            response = llm.invoke(messages)
+            st.markdown(response.content)
 
-            response = res["outputs"][0]["outputs"][0]["results"]["message"]["data"]["text"]
-            # Add response to chat history
-            st.markdown(response)
-
-        # Add assistant response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        st.session_state.messages.append({"role": "assistant", "content": response.content})
        
 if __name__ == "__main__":
     main()
