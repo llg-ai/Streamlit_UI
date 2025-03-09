@@ -18,7 +18,7 @@ from langchain_deepseek import ChatDeepSeek
 import pypdf
 from langchain_community.document_loaders.parsers import LLMImageBlobParser
 from langchain_openai import ChatOpenAI
-
+from langchain_core.prompts import PromptTemplate
 from langchain_experimental.text_splitter import SemanticChunker
 
 st.set_page_config(
@@ -30,22 +30,80 @@ if not os.environ.get("OPENAI_API_KEY"):
   os.environ["OPENAI_API_KEY"] = st.secrets["OPEN_API_KEY"]
 
 # setup chat model, embedding and vector_store
-llm = init_chat_model("gpt-4o-mini", model_provider="openai", temperature=0)
+llm = init_chat_model("gpt-4o", model_provider="openai", temperature=0)
 embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
 vector_store = InMemoryVectorStore(embeddings)
 
+# llm = ChatDeepSeek(
+#     model="deepseek-chat",
+#     temperature=0,
+#     max_tokens=None,
+#     timeout=None,
+#     max_retries=2,
+#     api_key=st.secrets["deepseek_api_key"]
+#     # other params...
+# )
 
-if not os.getenv("DEEPSEEK_API_KEY"):
-    os.environ["DEEPSEEK_API_KEY"] = st.secrets["deepseek_api_key"]
+# prompt_cus = ChatPromptTemplate(
+#                 [
+#                     (
+#                         "system",
+#                             """
 
-llm = ChatDeepSeek(
-    model="deepseek-chat",
-    temperature=0,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-    # other params...
-)
+#                             When users ask for high level summary or key takeaways, you shou search entire file and collect important memos for users
+#                             Including:
+#                             - Acquisition Details
+#                             - Financing Structure
+#                             - Termination Fee
+#                             - Voting Agreement
+#                             - Risks & Forward-Looking Statements
+#                             - Press Release & Investor Meetings
+#                             - Due Date/Announcement Date
+
+#                             Be sure also return the SEC filing link to users. 
+
+#                             When users ask a specific question, like termination fee, you should help users answer questions 
+#                             based on the context: {context}. If you do not know, just "say I do not know!" Do not make up answers! 
+#                             You should also return the underlying context where you found the answer for the question.
+
+#                             """
+#                     ),
+#                     ("human", "{input}"),
+#                 ]
+# )
+
+# chain = prompt_cus | llm
+
+template2 = """
+    Answer users questions {question}!
+
+    Before answer the question, you should think about the question
+    is about high level summary or key takeaways
+    OR
+    is about a specific question.
+
+    If you believe that this is a high level summary or takeaways question, you should search entire file and collect important memos for users
+    Including:
+    - Acquisition Details
+    - Financing Structure
+    - Termination Clauses
+    - Voting Agreement
+    - Risks & Forward-Looking Statements
+    - Press Release & Investor Meetings
+    - Due Date/Announcement Date
+
+    Be sure also return the SEC filing link to users. 
+
+    If you think this is a specific question,like termination fee, due date valuation and other question you think 
+    should fall into this category, you should help users answer questions 
+    based on the context: {context}. You should also return the underlying context where you found the answer for the question.
+    Also, you should highlight the "keywords".
+
+    If you do not know, just "say I do not know!" Do not make up the answers! 
+    
+"""
+
+custom_rag_prompt = PromptTemplate.from_template(template2)
 
 # Use local CSS
 def local_css(file_name):
@@ -153,8 +211,13 @@ def main():
                 )
                 pages = loader.load()
 
-                text_splitter = SemanticChunker(
-                    OpenAIEmbeddings(), breakpoint_threshold_type="percentile"
+                # text_splitter = SemanticChunker(
+                #     OpenAIEmbeddings(), breakpoint_threshold_type="percentile"
+                # )
+                text_splitter = RecursiveCharacterTextSplitter(
+                    chunk_size=3000,  # chunk size (characters)
+                    chunk_overlap=750,  # chunk overlap (characters)
+                    add_start_index=True,  # track index in original document
                 )
 
                 all_splits = text_splitter.split_documents(pages)
@@ -183,105 +246,29 @@ def main():
 
         # Display assistant response in chat message container
         with st.chat_message("assistant"):
-            
-            # from langchain import hub
-            # rephrase_prompt = hub.pull("langchain-ai/chat-langchain-rephrase")
-
-            # # build a retriever from vector_store
-            # retriever = vector_store.as_retriever(
-            #     search_type="mmr",
-            #     search_kwargs={"k": 1, "fetch_k": 2, "lambda_mult": 0.5},
-            # )
-
-            # from operator import itemgetter
-
-            # from langchain_core.output_parsers import StrOutputParser
-            # from langchain_core.prompts import ChatPromptTemplate
-            # from langchain_core.runnables import Runnable, RunnablePassthrough, chain
-
-            # contextualize_instructions = """Convert the latest user question into a standalone question given the chat history. Don't answer the question, return the question and nothing else (no descriptive text)."""
-            # contextualize_prompt = ChatPromptTemplate.from_messages(
-            #     [
-            #         ("system", contextualize_instructions),
-            #         ("placeholder", "{chat_history}"),
-            #         ("human", "{question}"),
-            #     ]
-            # )
-            # contextualize_question = contextualize_prompt | llm | StrOutputParser()
-
-            # qa_instructions = (
-            #     """Answer the user question given the following context:\n\n{context}."""
-            # )
-            # qa_prompt = ChatPromptTemplate.from_messages(
-            #     [("system", qa_instructions), ("human", "{question}")]
-            # )
-
-
-            # build a chain of chain
-            # question_answer_chain = create_stuff_documents_chain(llm, prompt_tem)
-            # rag_chain = create_retrieval_chain(retriever, question_answer_chain)
-            # invoke the chain
-            # response = rag_chain.invoke({"input": prompt})
-
-
-            # memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
-            # conversation_chain = ConversationalRetrievalChain.from_llm(
-            #     llm=llm,
-            #     chain_type="stuff",
-            #     retriever=vector_store.as_retriever(),
-            #     memory=memory
-            # )
-
-            # query = prompt
-            # result = conversation_chain({"question": query})
-            # answer = result["answer"]
 
             embedding = embeddings.embed_query(prompt)
 
-            results = vector_store.similarity_search_by_vector(embedding)
-            # for result in results:
-            #     st.markdown(result)
-            #     st.markdown("---------------------------------------------------------")
+            results = vector_store.similarity_search_by_vector(embedding, k=3)
 
-            prompt_cus = ChatPromptTemplate(
-                [
-                    (
-                        "system",
-                            """
+            # pass search result and question into the model chain
+            # res = chain.invoke(
+            #     {
+            #         "context": results,
+            #         "input": prompt,
+            #     }
+            # )
 
-                            When users ask for high level summary or key takeaways, you shou search entire file and collect important memos for users
-                            Including:
-                            - Acquisition Details
-                            - Financing Structure
-                            - Termination Clauses
-                            - Voting Agreement
-                            - Risks & Forward-Looking Statements
-                            - Press Release & Investor Meetings
-                            - Due Date/Announcement Date
+            # response = res.content
+            # st.markdown(response)
+            
+            # build prompt based on the search result
+            messages = custom_rag_prompt.invoke({"question": prompt, "context": results})
+            # load the prompt into LLM
+            response = llm.invoke(messages)
+            st.markdown(response.content)
 
-                            Be sure also return the SEC filing link to users. 
-
-                            When users ask a specific question, like termination fee, you should help users answer questions 
-                            based on the context: {context}. If you do not know, just "say I do not know!" Do not make up answers! 
-                            You should also return the underlying context where you found the answer for the question.
-
-                            """
-                    ),
-                    ("human", "{input}"),
-                ]
-            )
-
-            chain = prompt_cus | llm
-            res = chain.invoke(
-                {
-                    "context": results,
-                    "input": prompt,
-                }
-            )
-            response = res.content
-            st.markdown(response)
-
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        st.session_state.messages.append({"role": "assistant", "content": response.content})
        
 if __name__ == "__main__":
     main()
