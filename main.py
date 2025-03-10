@@ -20,7 +20,8 @@ from langchain_community.document_loaders.parsers import LLMImageBlobParser
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from langchain_experimental.text_splitter import SemanticChunker
-
+# To run the async function
+import asyncio
 st.set_page_config(
     page_title="LLG",
     page_icon="💵",
@@ -142,7 +143,7 @@ with st.sidebar:
         acquirer = st.text_input("Acquirer", "")
         acquired = st.text_input("Company acquired", "")
 
-def main():
+async def main():
     hide_streamlit_style = """
             <style>
             # MainMenu {visibility: hidden;}
@@ -263,13 +264,13 @@ def main():
                 # st.markdown(response)
                 
                 # build prompt based on the search result
-                messages = custom_rag_prompt.invoke({"question": prompt, "context": results})
+                prom = await custom_rag_prompt.ainvoke({"question": prompt, "context": results})
                 # load the prompt into LLM
-                response = llm.stream(messages)
+                response = llm.stream(prom)
                 res = st.write_stream(response)
-                st.markdown(res)
+                # st.markdown(res)
 
         st.session_state.messages.append({"role": "assistant", "content": res})
        
 if __name__ == "__main__":
-    main()
+     asyncio.run(main())
