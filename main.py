@@ -198,7 +198,7 @@ def main():
         }
         response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
     
-        with st.spinner("Think...", show_time=True):
+        with st.spinner("think...", show_time=True):
 
             with open(uploaded_file.name, mode='wb') as w:
                 w.write(uploaded_file.getvalue())
@@ -246,29 +246,30 @@ def main():
 
         # Display assistant response in chat message container
         with st.chat_message("assistant"):
+            with st.spinner(text = "thinking..."):  
+                embedding = embeddings.embed_query(prompt)
 
-            embedding = embeddings.embed_query(prompt)
+                results = vector_store.similarity_search_by_vector(embedding, k=3)
 
-            results = vector_store.similarity_search_by_vector(embedding, k=3)
+                # pass search result and question into the model chain
+                # res = chain.invoke(
+                #     {
+                #         "context": results,
+                #         "input": prompt,
+                #     }
+                # )
 
-            # pass search result and question into the model chain
-            # res = chain.invoke(
-            #     {
-            #         "context": results,
-            #         "input": prompt,
-            #     }
-            # )
+                # response = res.content
+                # st.markdown(response)
+                
+                # build prompt based on the search result
+                messages = custom_rag_prompt.invoke({"question": prompt, "context": results})
+                # load the prompt into LLM
+                response = llm.stream(messages)
+                res = st.write_stream(response)
+                st.markdown(res)
 
-            # response = res.content
-            # st.markdown(response)
-            
-            # build prompt based on the search result
-            messages = custom_rag_prompt.invoke({"question": prompt, "context": results})
-            # load the prompt into LLM
-            response = llm.invoke(messages)
-            st.markdown(response.content)
-
-        st.session_state.messages.append({"role": "assistant", "content": response.content})
+        st.session_state.messages.append({"role": "assistant", "content": res})
        
 if __name__ == "__main__":
     main()
