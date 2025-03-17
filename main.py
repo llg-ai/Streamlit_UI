@@ -265,10 +265,10 @@ def main():
             # build prompt based on the search result
             messages = custom_rag_prompt.invoke({"question": prompt, "context": results})
             # load the prompt into LLM
-            response = llm.invoke(messages)
-            st.markdown(response.content)
+            response = llm.stream(messages)
+            res = st.write_stream(response)
 
-        st.session_state.messages.append({"role": "assistant", "content": response.content})
+        st.session_state.messages.append({"role": "assistant", "content": res})
        
 if __name__ == "__main__":
     main()
