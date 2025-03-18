@@ -142,6 +142,8 @@ with st.sidebar:
         acquirer = st.text_input("Acquirer", "")
         acquired = st.text_input("Company acquired", "")
 
+        uploaded_file2 = st.file_uploader("Upload a pdf to start:", type=["pdf"])
+
 def main():
     hide_streamlit_style = """
             <style>
