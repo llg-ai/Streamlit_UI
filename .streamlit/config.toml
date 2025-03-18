@@ -1,7 +1,5 @@
 [server]
 maxUploadSize = 25
 
-# enableXsrfProtection = false
-
-enableCORS = true
-enableXsrfProtection = true
+[client]
+showSidebarNavigation = false
