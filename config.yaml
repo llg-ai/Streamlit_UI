@@ -1,0 +1,141 @@
+api_key: uxqwsgz81cxwieyh50c5jq16ng6iulgm
+cookie:
+  expiry_days: 30
+  key: uxqwsgz81cxwieyh50c5jq16ng6iulgm
+  name: eason
+credentials:
+  usernames:
+    aaa:
+      email: aaa@gmail.com
+      failed_login_attempts: 0
+      first_name: aaa
+      last_name: aaaa
+      logged_in: false
+      password: $2b$12$UL2AL.Wl5lXefAXsSzs3Du5kmSom72dOuGDlX2njaQ0Iqvc.BIo6O
+      roles: null
+    bbb:
+      email: bbb@gmail.com
+      first_name: bbb
+      last_name: bbb
+      logged_in: false
+      password: $2b$12$0/hHiqETDbdSjnBRwceaBerbWhzmxKw0zUOKan0tm43ZCysP2Jju2
+      roles: null
+    charleschen:
+      email: charleschen9188@gmail.com
+      failed_login_attempts: 0
+      first_name: charles
+      last_name: chen
+      logged_in: false
+      password: $2b$12$oYtLhh2qvESOVeWZwIgoS.bKwLutlpqg8TkpBXBVuZ4yapz1198Ni
+      roles: null
+    ddd:
+      email: ddd@gmail.com
+      failed_login_attempts: 0
+      first_name: ddd
+      last_name: ddd
+      logged_in: false
+      password: $2b$12$pkTpNZUJeGknemRjdY8goOca3BfAK0TeuYt4abxlDH2isGa6HR2za
+      roles: null
+    easonc:
+      email: eason@llg-ai.com
+      failed_login_attempts: 2
+      first_name: Eason
+      last_name: Chen
+      logged_in: false
+      password: $2b$12$TNdcT4Aflc7yQjx7TEM1peegkuHQ08kaEB1XgihpH0xkzAa00Di7.
+      roles:
+      - admin
+      - editor
+      - viewer
+    eee:
+      email: eee@gmail.com
+      failed_login_attempts: 1
+      first_name: eee
+      last_name: eee
+      logged_in: false
+      password: $2b$12$aikGx4YoMSFJ5nbRZjzE0eW1X0fjTo0MAB5d6oFkFgPHbdtjg61ka
+      roles: null
+    fff:
+      email: fff@gmail.com
+      failed_login_attempts: 0
+      first_name: fff
+      last_name: fff
+      logged_in: false
+      password: $2b$12$RbaieXoxwyANLxHuU6uR2uKp5WZnfZD5sRelaRvurzfchIWnryKvu
+      roles: null
+    ggg:
+      email: ggg@gmail.com
+      first_name: ggg
+      last_name: ggg
+      logged_in: false
+      password: $2b$12$IoK.a3Zs/0AYWV5/kuyev.N3z2voWK6X9SBdm2b1wBwTsvcNkR5Ei
+      roles: null
+    iii:
+      email: iii@gmail.com
+      failed_login_attempts: 0
+      first_name: iii
+      last_name: iii
+      logged_in: false
+      password: $2b$12$WerusefFCIZFOowejwV8qe2YQk3DNaZJy5Fb21.l6.u0WWrFHDInS
+      roles: null
+    mmm:
+      email: mmm@gmail.com
+      failed_login_attempts: 0
+      first_name: mmm
+      last_name: mmm
+      logged_in: false
+      password: $2b$12$eOUm3TYM9BnVWiLCN8.LyOz17DbwK5IWYeo2MfNt05Ku6/9OTT5MO
+      roles: null
+    pengc:
+      email: pengchencareer@gmail.com
+      first_name: eason
+      last_name: chenn
+      logged_in: false
+      password: $2b$12$ab.09Yi2677ZuD/QhS9YieJ1KGvvmpVizCxTFwJsiuwcdiHw7RUnC
+      password_hint: '7'
+      roles: null
+    rbriggs:
+      email: rbriggs@gmail.com
+      failed_login_attempts: 0
+      first_name: Rebecca
+      last_name: Briggs
+      logged_in: true
+      password: $2b$12$dE/qNwWLGpZuZZfqWQOlXOqTs1AsOerGNaQm8DXvmWO5M4qLxAqTy
+      roles:
+      - viewer
+    ttt:
+      email: ttt@gmail.com
+      first_name: ttt
+      last_name: ttt
+      logged_in: false
+      password: $2b$12$2JYXnUUO/ytnrgRMZCi27u1JXQ5iYAPRNBLoKg9qtRX3haDBW5Vbm
+      roles: null
+    zzz:
+      email: zzz@gmail.com
+      failed_login_attempts: 0
+      first_name: zzz
+      last_name: zzz
+      logged_in: false
+      password: $2b$12$TM7BiMq2fCBPmU.E.mOtbOuFBd0bA6OqUeQtZZw1wB6rClBl.K1UG
+      roles: null
+    zzzz:
+      email: xxxx@gmail.com
+      first_name: cccc
+      last_name: xxxx
+      logged_in: false
+      password: $2b$12$3ODOEmnokEo9nHRkm3cMj.wPLjUVrM.CMim6f/0zT0RRExayaQ7o2
+      roles: null
+oauth2:
+  google:
+    client_id: null
+    client_secret: null
+    redirect_uri: null
+  microsoft:
+    client_id: null
+    client_secret: null
+    redirect_uri: null
+    tenant_id: null
+pre-authorized:
+  emails:
+  - melsby@gmail.com
+  - eason2@llg-ai.com

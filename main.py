@@ -20,60 +20,158 @@ from langchain_community.document_loaders.parsers import LLMImageBlobParser
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from langchain_experimental.text_splitter import SemanticChunker
+from langchain_core.embeddings import DeterministicFakeEmbedding
+from langchain_community.document_loaders import UnstructuredExcelLoader
+
+
+import streamlit_authenticator as stauth
+import streamlit as st
+
+# handle auth
+import yaml
+from yaml.loader import SafeLoader
+
 # To run the async function
 import asyncio
+
+
 st.set_page_config(
     page_title="LLG",
     page_icon="💵",
 )
 
+# if 'login_display' not in st.session_state:
+#     st.session_state['login_display'] = None
+if 'register_display' not in st.session_state:
+    st.session_state['register_display'] = None
+
+with open('./config.yaml') as file:
+    config = yaml.load(file, Loader=SafeLoader)
+
+# Pre-hashing all plain text passwords once
+# stauth.Hasher.hash_passwords(config['credentials'])
+
+authenticator = stauth.Authenticate(
+    
+    config['credentials'],
+    # config['api_key'],
+    config['cookie']['name'],
+    config['cookie']['key'],
+    config['cookie']['expiry_days'],
+    
+)
+
+def show_login():
+    # if st.session_state['login_display'] is True:
+        try:
+            authenticator.login()
+            st.markdown(f"session auth status is: {st.session_state.get('authentication_status')}")
+            # st.session_state['signed'] = False
+        except Exception as e:
+            st.error(e)
+
+def special_login():
+    try:
+        authenticator.experimental_guest_login('Login with Google',
+                                            provider='google',
+                                            oauth2=config['oauth2'])
+        # authenticator.experimental_guest_login('Login with Microsoft',
+        #                                        provider='microsoft',
+        #                                        oauth2=config['oauth2'])
+    except Exception as e:
+        st.error(e)
+
+def check_auth_status():
+    # if st.session_state['login_display'] is True:
+        if st.session_state.get('authentication_status'):
+            
+                # st.session_state['signed'] = True
+            st.write(f'Welcome *{st.session_state.get("name")}*')
+            # st.title('Some content')
+            authenticator.logout()
+        elif st.session_state.get('authentication_status') is False:
+            st.error('Username/password is incorrect')
+        elif st.session_state.get('authentication_status') is None:
+            st.warning('Please enter your username and password')
+
+def modify_password():
+    if st.session_state.get('authentication_status'):
+        try:
+            if authenticator.reset_password(st.session_state.get('username')):
+                st.success('Password modified successfully')
+        except Exception as e:
+            st.error(e)
+
+def register():
+    if st.session_state.get('register_display') is True:
+        if st.session_state.get('authentication_status') is None or st.session_state.get('authentication_status') is False:
+            try:
+                email_of_registered_user, \
+                username_of_registered_user, \
+                name_of_registered_user = authenticator.register_user(password_hint=False, clear_on_submit=True, captcha=False)
+                if email_of_registered_user:
+                    st.session_state['register_display'] = False
+                    st.success('Registered successfully, please sign in!')
+            except Exception as e:
+                st.error(e)
+
+def reset_password():
+    try:
+        username_of_forgotten_password, \
+        email_of_forgotten_password, \
+        new_random_password = authenticator.forgot_password()
+        if username_of_forgotten_password:
+            st.success('New password to be sent securely')
+            # To securely transfer the new password to the user please see step 8.
+        elif username_of_forgotten_password == False:
+            st.error('Username not found')
+    except Exception as e:
+        st.error(e)
+
+def reset_username():
+    try:
+        username_of_forgotten_username, \
+        email_of_forgotten_username = authenticator.forgot_username()
+        if username_of_forgotten_username:
+            st.success('Username to be sent securely')
+            # To securely transfer the username to the user please see step 8.
+        elif username_of_forgotten_username == False:
+            st.error('Email not found')
+    except Exception as e:
+        st.error(e)
+
+def update_user_info():
+    if st.session_state.get('authentication_status'):
+        try:
+            if authenticator.update_user_details(st.session_state.get('username')):
+                st.success('Entries updated successfully')
+        except Exception as e:
+            st.error(e)
+
+def save_config():
+    with open('./config.yaml', 'w') as file:
+        yaml.dump(config, file, default_flow_style=False, allow_unicode=True)
+
+
 if not os.environ.get("OPENAI_API_KEY"):
   os.environ["OPENAI_API_KEY"] = st.secrets["OPEN_API_KEY"]
 
 # setup chat model, embedding and vector_store
-llm = init_chat_model("gpt-4o", model_provider="openai", temperature=0)
-embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
+# llm = init_chat_model("gpt-4o", model_provider="openai", temperature=0)
+embeddings = DeterministicFakeEmbedding(size=4096)
+
+# embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
 vector_store = InMemoryVectorStore(embeddings)
 
-# llm = ChatDeepSeek(
-#     model="deepseek-chat",
-#     temperature=0,
-#     max_tokens=None,
-#     timeout=None,
-#     max_retries=2,
-#     api_key=st.secrets["deepseek_api_key"]
-#     # other params...
-# )
-
-# prompt_cus = ChatPromptTemplate(
-#                 [
-#                     (
-#                         "system",
-#                             """
-
-#                             When users ask for high level summary or key takeaways, you shou search entire file and collect important memos for users
-#                             Including:
-#                             - Acquisition Details
-#                             - Financing Structure
-#                             - Termination Fee
-#                             - Voting Agreement
-#                             - Risks & Forward-Looking Statements
-#                             - Press Release & Investor Meetings
-#                             - Due Date/Announcement Date
-
-#                             Be sure also return the SEC filing link to users. 
-
-#                             When users ask a specific question, like termination fee, you should help users answer questions 
-#                             based on the context: {context}. If you do not know, just "say I do not know!" Do not make up answers! 
-#                             You should also return the underlying context where you found the answer for the question.
-
-#                             """
-#                     ),
-#                     ("human", "{input}"),
-#                 ]
-# )
-
-# chain = prompt_cus | llm
+llm = ChatDeepSeek(
+    model="deepseek-chat",
+    temperature=0,
+    max_tokens=None,
+    timeout=None,
+    max_retries=2,
+    api_key=st.secrets["deepseek_api_key"]
+    # other params...
+)
 
 template2 = """
     Answer users questions {question}!
@@ -136,12 +234,38 @@ st.markdown(
 
 with st.sidebar:
         container2 = st.container
-        uploaded_file = st.file_uploader("Upload a pdf to start:", type=["pdf"])
-        st.text("OR")
-        st.text("Put in company names to start:")
+        uploaded_file = st.file_uploader("Upload a pdf to start:", type=["pdf", "txt", "docx"])
+        # st.text("OR")
+        # st.text("Put in company names to start:")
         
-        acquirer = st.text_input("Acquirer", "")
-        acquired = st.text_input("Company acquired", "")
+        # acquirer = st.text_input("Acquirer", "")
+        # acquired = st.text_input("Company acquired", "")
+
+        if st.session_state.get('authentication_status') is None:
+            st.write("Login to see more powerful and customized answer!")
+
+        # login, signup = st.columns(2)
+        # if st.button("Login", use_container_width=True):
+        #     st.session_state['login_display'] = True
+        show_login()
+        check_auth_status()
+        save_config()
+        # reset_password()
+        # reset_username()
+        # modify_password()
+            # save_config()
+            # if st.button("Forgot password"):
+            #     reset_password()
+            # if st.button("Forgot username"):
+            #     reset_username()
+        if st.session_state.get('authentication_status') is None or st.session_state.get('authentication_status') is False:
+            st.write("If you do not have an account:")
+            if st.button("Sign up", use_container_width=True):
+                st.session_state['register_display'] = True
+        register()
+        save_config()
+
+
 
 async def main():
     hide_streamlit_style = """
@@ -178,53 +302,117 @@ async def main():
 
     # update the file count
     url_count = "https://mvp-fastapi.onrender.com/count"
-    count = requests.request("GET", url_count).json()["count"][0]
+    # count = requests.request("GET", url_count).json()["count"][0]
     # count += 1
-    with st.sidebar:
-        st.metric(label="Questions answered based on files:", value=count, border=True)
+    # with st.sidebar:
+    #     st.metric(label="Questions answered based on files:", value=count, border=True)
 
     if uploaded_file is not None:
         # update file count
-        count += 1
-        url = "https://mvp-fastapi.onrender.com/"
-        # POST request
-        payload = {
-            "item": "",
-            "count": count
-        }
+        # count += 1
+        # url = "https://mvp-fastapi.onrender.com/"
+        # # POST request
+        # payload = {
+        #     "item": "",
+        #     "count": count
+        # }
        
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        }
-        response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
+        # headers = {
+        #     'Content-Type': 'application/json',
+        #     'Accept': 'application/json'
+        # }
+        # response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
     
         with st.spinner("think...", show_time=True):
 
-            with open(uploaded_file.name, mode='wb') as w:
-                w.write(uploaded_file.getvalue())
-                
-                loader = PyPDFLoader(
-                    uploaded_file.name,
-                    mode="page",
-                    images_inner_format="markdown-img",
-                    images_parser=LLMImageBlobParser(model=ChatOpenAI(model="gpt-4o", max_tokens=1024)),
-                )
-                pages = loader.load()
+            # check file type
+            file_name = uploaded_file.name
+            file_extension = os.path.splitext(file_name)[1]
 
-                # text_splitter = SemanticChunker(
-                #     OpenAIEmbeddings(), breakpoint_threshold_type="percentile"
-                # )
+            if file_extension == '.docx':
+                st.markdown("this is docx/doc file")
+                with open(uploaded_file.name, mode='wb') as w:
+                    w.write(uploaded_file.getvalue())
+                import docx2txt
+                my_text = docx2txt.process(uploaded_file.name)
+                # st.markdown(my_text)
+    
                 text_splitter = RecursiveCharacterTextSplitter(
-                    chunk_size=3000,  # chunk size (characters)
-                    chunk_overlap=750,  # chunk overlap (characters)
-                    add_start_index=True,  # track index in original document
+                        chunk_size=3000,  # chunk size (characters)
+                        chunk_overlap=750,  # chunk overlap (characters)
+                        add_start_index=True,  # track index in original document
+                )
+                all_splits = text_splitter.split_text(my_text)
+                
+                # Load all splits into VDB
+                vector_store.add_texts(texts=all_splits)
+                
+            elif file_extension == '.xlsx' or file_extension == '.xls':
+                st.markdown("this is xls/x file")
+                with open(uploaded_file.name, mode='wb') as w:
+                    w.write(uploaded_file.getvalue())
+
+                import pandas as pd
+                df = pd.read_excel(uploaded_file.name)
+
+                from langchain_community.document_loaders import DataFrameLoader
+                loader = DataFrameLoader(df, page_content_column=df.columns[0])
+                docs = loader.load()
+                # Use lazy load for larger table, which won't read the full table into memory
+                for i in loader.lazy_load():
+                    st.markdown(i)
+                # loader = UnstructuredExcelLoader(uploaded_file.name)
+                # docs = loader.load()
+
+                # st.markdown(len(docs))
+                # st.markdown(docs)
+                text_splitter = RecursiveCharacterTextSplitter(
+                        chunk_size=750,  # chunk size (characters)
+                        chunk_overlap=150,  # chunk overlap (characters)
+                        add_start_index=True,  # track index in original document
                 )
 
-                all_splits = text_splitter.split_documents(pages)
- 
+                all_splits = text_splitter.split_documents(docs)
+                st.markdown(all_splits)
                 # Load all splits into VDB
                 vector_store.add_documents(documents=all_splits)
+            
+
+            elif file_extension == '.txt':
+                text_splitter = RecursiveCharacterTextSplitter(
+                        chunk_size=3000,  # chunk size (characters)
+                        chunk_overlap=750,  # chunk overlap (characters)
+                        add_start_index=True,  # track index in original document
+                )
+                all_splits = text_splitter.split_text(uploaded_file.getvalue().decode("utf-8"))
+                # Load all splits into VDB
+                vector_store.add_texts(texts=all_splits)
+                
+            elif file_extension == '.pdf':
+                with open(uploaded_file.name, mode='wb') as w:
+                    w.write(uploaded_file.getvalue())
+                    
+                    loader = PyPDFLoader(
+                        uploaded_file.name,
+                        mode="page",
+                        # images_inner_format="markdown-img",
+                        # images_parser=LLMImageBlobParser(model=ChatOpenAI(model="gpt-4o", max_tokens=1024)),
+                    )
+                    pages = loader.load()
+
+                    # text_splitter = SemanticChunker(
+                    #     OpenAIEmbeddings(), breakpoint_threshold_type="percentile"
+                    # )
+                    text_splitter = RecursiveCharacterTextSplitter(
+                        chunk_size=3000,  # chunk size (characters)
+                        chunk_overlap=750,  # chunk overlap (characters)
+                        add_start_index=True,  # track index in original document
+                    )
+
+                    all_splits = text_splitter.split_documents(pages)
+    
+                    # Load all splits into VDB
+                    vector_store.add_documents(documents=all_splits)
 
     # Initialize chat history
     if "messages" not in st.session_state:
