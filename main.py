@@ -115,24 +115,24 @@ local_css("style/style.css")
 
 # Load Animation
 # animation_symbol = "❄"
-animation_symbol = "🎉" 
-animation_symbol2 = "💵"
-animation_symbol3 = "$"
+# animation_symbol = "🎉" 
+# animation_symbol2 = "💵"
+# animation_symbol3 = "$"
 
-st.markdown(
-    f"""
-    <div class="snowflake">{animation_symbol}</div>
-    <div class="snowflake">{animation_symbol}</div>
-    <div class="snowflake">{animation_symbol}</div>
-    <div class="snowflake">{animation_symbol2}</div>
-    <div class="snowflake">{animation_symbol2}</div>
-    <div class="snowflake">{animation_symbol2}</div>
-    <div class="snowflake">{animation_symbol3}</div>
-    <div class="snowflake">{animation_symbol3}</div>
-    <div class="snowflake">{animation_symbol3}</div>
-    """,
-    unsafe_allow_html=True,
-)
+# st.markdown(
+#     f"""
+#     <div class="snowflake">{animation_symbol}</div>
+#     <div class="snowflake">{animation_symbol}</div>
+#     <div class="snowflake">{animation_symbol}</div>
+#     <div class="snowflake">{animation_symbol2}</div>
+#     <div class="snowflake">{animation_symbol2}</div>
+#     <div class="snowflake">{animation_symbol2}</div>
+#     <div class="snowflake">{animation_symbol3}</div>
+#     <div class="snowflake">{animation_symbol3}</div>
+#     <div class="snowflake">{animation_symbol3}</div>
+#     """,
+#     unsafe_allow_html=True,
+# )
 
 with st.sidebar:
         container2 = st.container
@@ -155,7 +155,7 @@ async def main():
     
     # Streamlit UI
     st.title(f":balloon: :green[LLG AI]")
-    st.markdown("""<span style="color: green;">AI-powered information retrieval in finance!</span>""", unsafe_allow_html=True)
+    st.markdown("""<span style="color: green;">The best AI app for public markets investors!</span>""", unsafe_allow_html=True)
 
     css="""
     <style>
