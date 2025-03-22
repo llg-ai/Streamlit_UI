@@ -154,7 +154,10 @@ def save_config():
 
 
 if not os.environ.get("OPENAI_API_KEY"):
-  os.environ["OPENAI_API_KEY"] = st.secrets["OPEN_API_KEY"]
+  os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+
+if not os.environ.get("deepseek_api_key"):
+  os.environ["deepseek_api_key"] = st.secrets["deepseek_api_key"]
 
 # setup chat model, embedding and vector_store
 # llm = init_chat_model("gpt-4o", model_provider="openai", temperature=0)
@@ -169,7 +172,7 @@ llm = ChatDeepSeek(
     max_tokens=None,
     timeout=None,
     max_retries=2,
-    api_key=st.secrets["deepseek_api_key"]
+    api_key=os.environ["deepseek_api_key"]
     # other params...
 )
 
