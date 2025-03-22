@@ -2,4 +2,4 @@
 maxUploadSize = 25
 
 [client]
-showSidebarNavigation = false
+showSidebarNavigation = true
