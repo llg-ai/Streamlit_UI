@@ -40,3 +40,5 @@ langchain_experimental
 pypdf
 
 streamlit_authenticator
+docx2txt
+yaml
