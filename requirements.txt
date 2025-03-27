@@ -38,3 +38,4 @@ langchain_openai
 langchain_deepseek
 langchain_experimental
 pypdf
+docx2txt
