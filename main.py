@@ -136,7 +136,7 @@ local_css("style/style.css")
 
 with st.sidebar:
         container2 = st.container
-        uploaded_file = st.file_uploader("Upload a pdf to start:", type=["pdf"])
+        uploaded_file = st.file_uploader("Upload a pdf to start:", type=["pdf", "txt", "docx"], accept_multiple_files=True)
         st.text("OR")
         st.text("Put in company names to start:")
         
@@ -201,30 +201,63 @@ async def main():
     
         with st.spinner("think...", show_time=True):
 
-            with open(uploaded_file.name, mode='wb') as w:
-                w.write(uploaded_file.getvalue())
-                
-                loader = PyPDFLoader(
-                    uploaded_file.name,
-                    mode="page",
-                    images_inner_format="markdown-img",
-                    images_parser=LLMImageBlobParser(model=ChatOpenAI(model="gpt-4o", max_tokens=1024)),
-                )
-                pages = loader.load()
+            # check file type
+            file_name = uploaded_file.name
+            file_extension = os.path.splitext(file_name)[1]
 
-                # text_splitter = SemanticChunker(
-                #     OpenAIEmbeddings(), breakpoint_threshold_type="percentile"
-                # )
+            if file_extension == '.docx':
+                st.markdown("this is docx/doc file")
+                with open(uploaded_file.name, mode='wb') as w:
+                    w.write(uploaded_file.getvalue())
+                import docx2txt
+                my_text = docx2txt.process(uploaded_file.name)
+                # st.markdown(my_text)
+    
                 text_splitter = RecursiveCharacterTextSplitter(
-                    chunk_size=3000,  # chunk size (characters)
-                    chunk_overlap=750,  # chunk overlap (characters)
-                    add_start_index=True,  # track index in original document
+                        chunk_size=3000,  # chunk size (characters)
+                        chunk_overlap=750,  # chunk overlap (characters)
+                        add_start_index=True,  # track index in original document
                 )
-
-                all_splits = text_splitter.split_documents(pages)
- 
+                all_splits = text_splitter.split_text(my_text)
+                
                 # Load all splits into VDB
-                vector_store.add_documents(documents=all_splits)
+                vector_store.add_texts(texts=all_splits)
+            
+            elif file_extension == '.txt':
+                text_splitter = RecursiveCharacterTextSplitter(
+                        chunk_size=3000,  # chunk size (characters)
+                        chunk_overlap=750,  # chunk overlap (characters)
+                        add_start_index=True,  # track index in original document
+                )
+                all_splits = text_splitter.split_text(uploaded_file.getvalue().decode("utf-8"))
+                # Load all splits into VDB
+                vector_store.add_texts(texts=all_splits)
+
+            elif file_extension == '.pdf':
+                with open(uploaded_file.name, mode='wb') as w:
+                    w.write(uploaded_file.getvalue())
+                    
+                    loader = PyPDFLoader(
+                        uploaded_file.name,
+                        mode="page",
+                        images_inner_format="markdown-img",
+                        images_parser=LLMImageBlobParser(model=ChatOpenAI(model="gpt-4o", max_tokens=1024)),
+                    )
+                    pages = loader.load()
+
+                    # text_splitter = SemanticChunker(
+                    #     OpenAIEmbeddings(), breakpoint_threshold_type="percentile"
+                    # )
+                    text_splitter = RecursiveCharacterTextSplitter(
+                        chunk_size=3000,  # chunk size (characters)
+                        chunk_overlap=750,  # chunk overlap (characters)
+                        add_start_index=True,  # track index in original document
+                    )
+
+                    all_splits = text_splitter.split_documents(pages)
+    
+                    # Load all splits into VDB
+                    vector_store.add_documents(documents=all_splits)
 
     # Initialize chat history
     if "messages" not in st.session_state:
