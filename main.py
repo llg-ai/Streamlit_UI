@@ -207,11 +207,11 @@ async def main():
                 file_extension = os.path.splitext(file_name)[1]
 
                 if file_extension == '.docx':
-                    st.markdown("this is docx/doc file")
-                    with open(uploaded_file.name, mode='wb') as w:
-                        w.write(uploaded_file.getvalue())
+                    # st.markdown("this is docx/doc file")
+                    with open(file_name, mode='wb') as w:
+                        w.write(file.getvalue())
                     import docx2txt
-                    my_text = docx2txt.process(uploaded_file.name)
+                    my_text = docx2txt.process(file_name)
                     # st.markdown(my_text)
         
                     text_splitter = RecursiveCharacterTextSplitter(
@@ -230,16 +230,16 @@ async def main():
                             chunk_overlap=750,  # chunk overlap (characters)
                             add_start_index=True,  # track index in original document
                     )
-                    all_splits = text_splitter.split_text(uploaded_file.getvalue().decode("utf-8"))
+                    all_splits = text_splitter.split_text(file.getvalue().decode("utf-8"))
                     # Load all splits into VDB
                     vector_store.add_texts(texts=all_splits)
 
                 elif file_extension == '.pdf':
-                    with open(uploaded_file.name, mode='wb') as w:
-                        w.write(uploaded_file.getvalue())
+                    with open(file_name, mode='wb') as w:
+                        w.write(file.getvalue())
                         
                         loader = PyPDFLoader(
-                            uploaded_file.name,
+                            file_name,
                             mode="page",
                             images_inner_format="markdown-img",
                             images_parser=LLMImageBlobParser(model=ChatOpenAI(model="gpt-4o", max_tokens=1024)),
