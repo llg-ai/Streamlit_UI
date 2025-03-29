@@ -75,6 +75,39 @@ vector_store = InMemoryVectorStore(embeddings)
 
 # chain = prompt_cus | llm
 
+template3 = """
+    You should collect sec filing information about company {acquirer} acquired company {acquired}!
+
+    Answer users questions {question}!
+
+    Before answer the question, you should think about the question
+    is about high level summary or key takeaways
+    OR
+    is about a specific question.
+
+    If you believe that this is a high level summary or takeaways question, you should search entire file and collect important memos for users
+    Including:
+    - Acquisition Details
+    - Financing Structure
+    - Termination Clauses
+    - Voting Agreement
+    - Risks & Forward-Looking Statements
+    - Press Release & Investor Meetings
+    - Due Date/Announcement Date
+
+    Be sure also return the SEC filing link to users. 
+
+    If you think this is a specific question,like termination fee, due date valuation and other question you think 
+    should fall into this category, you should help users answer questions. You should also return the underlying context where you found the answer for the question.
+    Also, you should highlight the "keywords".
+
+    If you do not know, just "say I do not know!" Do not make up the answers! 
+    
+"""
+
+custom_rag_prompt3 = PromptTemplate.from_template(template3)
+
+
 template2 = """
     Answer users questions {question}!
 
@@ -298,7 +331,10 @@ async def main():
                 # st.markdown(response)
                 
                 # build prompt based on the search result
-                prom = await custom_rag_prompt.ainvoke({"question": prompt, "context": results})
+                if acquirer and acquired:
+                    prom = await custom_rag_prompt3.ainvoke({"question": prompt, "acquirer": acquirer, "acquired": acquired})            
+                else:
+                    prom = await custom_rag_prompt.ainvoke({"question": prompt, "context": results})
                 # load the prompt into LLM
                 response = llm.stream(prom)
                 res = st.write_stream(response)
