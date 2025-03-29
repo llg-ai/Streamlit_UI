@@ -315,31 +315,17 @@ async def main():
         # Display assistant response in chat message container
         with st.chat_message("assistant"):
             with st.spinner(text = "thinking..."):  
-                embedding = embeddings.embed_query(prompt)
-
-                results = vector_store.similarity_search_by_vector(embedding, k=3)
-
-                # pass search result and question into the model chain
-                # res = chain.invoke(
-                #     {
-                #         "context": results,
-                #         "input": prompt,
-                #     }
-                # )
-
-                # response = res.content
-                # st.markdown(response)
-                
-                # build prompt based on the search result
                 if acquirer and acquired:
-                    prom = await custom_rag_prompt3.ainvoke({"question": prompt, "acquirer": acquirer, "acquired": acquired})            
+                    prom = await custom_rag_prompt3.ainvoke({"question": prompt, "acquirer": acquirer, "acquired": acquired})
                 else:
+                    embedding = embeddings.embed_query(prompt)
+                    results = vector_store.similarity_search_by_vector(embedding, k=3)
+
                     prom = await custom_rag_prompt.ainvoke({"question": prompt, "context": results})
                 # load the prompt into LLM
                 response = llm.stream(prom)
                 res = st.write_stream(response)
-                # st.markdown(res)
-
+                
         st.session_state.messages.append({"role": "assistant", "content": res})
        
 if __name__ == "__main__":
