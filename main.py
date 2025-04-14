@@ -167,14 +167,14 @@ local_css("style/style.css")
 #     unsafe_allow_html=True,
 # )
 
-with st.sidebar:
-        container2 = st.container
-        uploaded_file = st.file_uploader("Upload a pdf to start:", type=["pdf", "txt", "docx"], accept_multiple_files=True)
-        st.text("OR")
-        st.text("Put in company names to start:")
+# with st.sidebar:
+        # container2 = st.container
+uploaded_file = st.file_uploader("Upload a pdf to start:", type=["pdf", "txt", "docx"], accept_multiple_files=True)
+        # st.text("OR")
+        # st.text("Put in company names to start:")
         
-        acquirer = st.text_input("Acquirer", "")
-        acquired = st.text_input("Company acquired", "")
+        # acquirer = st.text_input("Acquirer", "")
+        # acquired = st.text_input("Company acquired", "")
 
 async def main():
     hide_streamlit_style = """
@@ -187,8 +187,8 @@ async def main():
     st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
     
     # Streamlit UI
-    st.title(f":balloon: :green[LLG AI]")
-    st.markdown("""<span style="color: green;">The best AI app for public markets investors!</span>""", unsafe_allow_html=True)
+    # st.title(f":balloon: :green[LLG AI]")
+    # st.markdown("""<span style="color: green;">The best AI app for public markets investors!</span>""", unsafe_allow_html=True)
 
     css="""
     <style>
@@ -213,8 +213,8 @@ async def main():
     url_count = "https://mvp-fastapi.onrender.com/count"
     count = requests.request("GET", url_count).json()["count"][0]
     # count += 1
-    with st.sidebar:
-        st.metric(label="Questions answered based on files:", value=count, border=True)
+    # with st.sidebar:
+    #     st.metric(label="Questions answered based on files:", value=count, border=True)
 
     if uploaded_file is not None:
         # update file count
@@ -315,13 +315,13 @@ async def main():
         # Display assistant response in chat message container
         with st.chat_message("assistant"):
             with st.spinner(text = "thinking..."):  
-                if acquirer and acquired:
-                    prom = await custom_rag_prompt3.ainvoke({"question": prompt, "acquirer": acquirer, "acquired": acquired})
-                else:
-                    embedding = embeddings.embed_query(prompt)
-                    results = vector_store.similarity_search_by_vector(embedding, k=3)
+                # if acquirer and acquired:
+                #     prom = await custom_rag_prompt3.ainvoke({"question": prompt, "acquirer": acquirer, "acquired": acquired})
+                # else:
+                embedding = embeddings.embed_query(prompt)
+                results = vector_store.similarity_search_by_vector(embedding, k=3)
 
-                    prom = await custom_rag_prompt.ainvoke({"question": prompt, "context": results})
+                prom = await custom_rag_prompt.ainvoke({"question": prompt, "context": results})
                 # load the prompt into LLM
                 response = llm.stream(prom)
                 res = st.write_stream(response)
